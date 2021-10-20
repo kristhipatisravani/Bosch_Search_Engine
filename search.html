@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <title>Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=10" charset="UTF-8">
+<style>
+::placeholder {
+  color: black;
+
+  opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+ color: black;
+
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+ color: black;
+
+}
+body {background-color: #0000A0;}
+h1   {color: black;}
+h3   {color: white;}
+p    {color: white;}
+</style>
+</head>
+<body>
+
+    <a href="/" ><img src="	https://1000logos.net/wp-content/uploads/2016/10/Bosch-Logo-640x400.png" height=150 width=150 alt = 'bosch'/>
+        </a>
+
+
+
+
+<form action ='/result' method = "GET"
+         enctype = "multipart/form-data" id="form">
+  <input type="search" id="query" name="q" placeholder="Type something to search anything..." style="margin:100px;width:300px">
+  <button>Search</button>
+    <input type="button" onclick="window.location.href='/logout';" value="Logout" />
+</form>
+
+
+
+</body>
+</html>
