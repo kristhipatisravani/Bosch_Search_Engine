@@ -1,4 +1,5 @@
 # python libraries
+
 import subprocess
 import sys
 
@@ -8,27 +9,25 @@ for package in packages:
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 # import necessary library
+
 from flask import Flask, render_template, request, redirect, session
 from datetime import timedelta
-
 from bs4 import BeautifulSoup
 from requests import get
-import json
 
-
-grp = {}
+# empty list to save search results
+search_results = []
 
 
 # Modified code ~ (SOURCE: https://github.com/Nv7-GitHub/googlesearch)
 def search(term, num_results=10, lang="en", proxy=None):
     usr_agent = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (HTML, like Gecko) '
                       'Chrome/61.0.3163.100 Safari/537.36'}
 
     def fetch_results(search_term, number_results, language_code):
 
-
-        google_url = 'https://www.google.com/search?q={}&num={}&hl={}'.format(search_term, number_results + 1,
+        google_url = 'https://www.google.com/search?q={}&num={}&hl={}'.format(search_term, number_results,
                                                                               language_code)
         proxies = None
         if proxy:
@@ -45,20 +44,26 @@ def search(term, num_results=10, lang="en", proxy=None):
     def parse_results(raw_html):
         soup = BeautifulSoup(raw_html, 'html.parser')
         result_block = soup.find_all('div', attrs={'class': 'g'})
+        search_results.append("<br>{ </br>")
         for result in result_block:
             link = result.find('a', href=True)
             title = result.find('h3')
             if link and title:
-                grp[str(title.get_text())] = link['href']
-        json_object = json.dumps(grp, indent=10)
-        return json_object
+                search_results.append("<br>" + "<span" + " " + "style" + "=" + '"padding-left:30px"' + ">" + "{" +
+                           '"' + str(
+                    title.get_text()) + '"' + " : " + "<a" + " " + "target =" + '"_blank"' + " " + "href=" + '"' + link[
+                               'href'] + '"' + ">" + '"'
+                           + str(link['href']) + '"' + "</a>" + "}" + "</br>" + "</span>")
+        search_results.append("<br>}</br>")
+
+        return search_results
 
     html = fetch_results(term, num_results, lang)
     return parse_results(html)
 
 
 # App config
-app = Flask(__name__,template_folder='../search_app/')
+app = Flask(__name__, template_folder='../search_app/')
 app.secret_key = "Bosch@@2021"
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=120)
 
@@ -75,13 +80,13 @@ def home():
 # login page with route host/login
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    if (request.method == 'POST'):
+    if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         if username == user['username'] and password == user['password']:
             session['user'] = username
             session.permanent = True
-            app.permanent_session_lifetime = timedelta(seconds=30)
+            app.permanent_session_lifetime = timedelta(seconds=120)
 
             return redirect('/bosch_search_engine')
 
@@ -93,12 +98,13 @@ def login():
 # search_engine page with route host/bosch_search_engine
 @app.route('/bosch_search_engine')
 def dashboard():
-    if ('user' in session and session['user'] == user['username']):
+    if 'user' in session and session['user'] == user['username']:
         return render_template('search.html')
 
     return render_template('Not_login.html')
 
 
+# empty list to save user query
 res = []
 
 
@@ -110,12 +116,21 @@ def result():
     html = open('../search_app/result.html', 'r').read()
 
     file = BeautifulSoup(html, 'html.parser')
+    search(text)
 
-    file.p.string = search(text)
+    search_results_tags = ",".join(search_results).replace(',', '')
+    file.p.clear()
 
-    open('../search_app/result.html', 'w').write(str(file))
+    file.p.append(BeautifulSoup(search_results_tags, 'html.parser'))
 
-    return render_template('result.html')
+    open('../search_app/result.html', 'w', encoding='utf-8', errors='ignore').write(str(file))
+    res.clear()
+    search_results.clear()
+
+    if 'user' in session and session['user'] == user['username']:
+        return render_template('result.html')
+
+    return render_template('Not_login.html')
 
 
 # Logout process
@@ -128,5 +143,3 @@ def logout():
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)
-
-
