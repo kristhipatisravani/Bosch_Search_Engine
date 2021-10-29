@@ -27,7 +27,7 @@ def search(term, num_results=10, lang="en", proxy=None):
 
     def fetch_results(search_term, number_results, language_code):
 
-        google_url = 'https://www.google.com/search?q={}&num={}&hl={}'.format(search_term, number_results,
+        google_url = 'https://www.google.com/search?q={}&num={}&hl={}'.format(search_term, number_results + 1,
                                                                               language_code)
         proxies = None
         if proxy:
@@ -113,7 +113,7 @@ res = []
 def result():
     res.append(request.args.get('q'))
     text = res[0]
-    html = open('../search_app/result.html', 'r').read()
+    html = open('../search_app/result.html', 'r', errors='ignore').read()
 
     file = BeautifulSoup(html, 'html.parser')
     search(text)
@@ -128,9 +128,9 @@ def result():
     search_results.clear()
 
     if 'user' in session and session['user'] == user['username']:
-        return render_template('result.html')
+        return render_template('result.html', errors='ignore')
 
-    return render_template('Not_login.html')
+    return render_template('Not_login.html', )
 
 
 # Logout process
